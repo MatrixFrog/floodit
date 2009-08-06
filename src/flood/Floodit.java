@@ -2,6 +2,7 @@ package flood;
 
 import java.awt.Canvas;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -10,6 +11,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 
@@ -23,6 +25,8 @@ public class Floodit {
 
 	private JPanel panel;
 	private Grid grid;
+	private int numMoves = 0;
+	private JLabel numMovesLabel = new JLabel("0", JLabel.LEFT);
 
 	private Canvas canvas = new Canvas() {
 		@Override
@@ -41,25 +45,38 @@ public class Floodit {
 	};
 
 	public Floodit() {
+		GridBagConstraints constraints;
+
 		grid = new Grid(10, 10);
 		panel = new JPanel(new GridBagLayout());
 		panel.setSize(800, 800);
 		//addMenuBar();
 
-		GridBagConstraints constraints = new GridBagConstraints();
-		constraints.gridwidth = Square.colors().size();
-
 		canvas.setSize(800, 800);
+
+		constraints = new GridBagConstraints();
+		constraints.gridx = 0;
+		constraints.anchor = GridBagConstraints.NORTHWEST;
+		numMovesLabel.setSize(100, 100);
+		numMovesLabel.setFont(new Font("Dialog", Font.BOLD, 34));
+		panel.add(numMovesLabel, constraints);
+
+		constraints = new GridBagConstraints();
+		constraints.gridx = 1;
+		//constraints.gridwidth = Square.colors().size();
 		panel.add(canvas, constraints);
+
 		addButtons();
 
 		panel.setVisible(true);
 
 		JFrame window = new JFrame("Flood It");
-		window.setSize(900, 900);
+		window.setSize(1000, 900);
 		window.add(panel);
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.setVisible(true);
+
+		update();
 	}
 
 	public static void main(String[] args) {
@@ -75,6 +92,7 @@ public class Floodit {
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.fill = GridBagConstraints.HORIZONTAL;
 		constraints.gridy = 1;
+		constraints.gridwidth = 2;
 		panel.add(buttonPanel, constraints);
 
 		int i=0;
@@ -89,7 +107,8 @@ public class Floodit {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					grid.changeUpperLeftGroupToColor(color);
-					canvas.repaint();
+					numMoves++;
+					update();
 				}
 			});
 			constraints = new GridBagConstraints();
@@ -98,5 +117,10 @@ public class Floodit {
 			constraints.ipady = 10;
 			buttonPanel.add(button, constraints);
 		}
+	}
+
+	public void update() {
+		canvas.repaint();
+		numMovesLabel.setText(Integer.toString(numMoves));
 	}
 }
