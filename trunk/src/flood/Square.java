@@ -53,6 +53,14 @@ public class Square {
 		return colorsNames.get(color).toString();
 	}
 
+	/**
+	 * Equivalent to paint(g, x, y, width, height, false)
+	 */
+	public void paint(Graphics g, int x, int y,
+			int width, int height) {
+		paint(g, x, y, width, height, false);
+	}
+
 	public void paint(Graphics g, int x, int y,
 			int width, int height, boolean addDebugDot) {
 		g.setColor(getColor());

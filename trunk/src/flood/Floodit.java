@@ -16,7 +16,7 @@ import javax.swing.JPanel;
 /**
  * An attempt to clone the iPhone game Floodit
  */
-public class Floodit extends Canvas {
+public class Floodit {
 
 	//private static final boolean DEBUG = true;
 	private static final boolean DEBUG = false;
@@ -24,28 +24,21 @@ public class Floodit extends Canvas {
 	private JPanel panel;
 	private Grid grid;
 
-	public static void main(String[] args) {
-		new Floodit();
-	}
-
-	@Override
-	public void paint(Graphics g) {
-		int squareWidth = getWidth() / grid.getWidth();
-		int squareHeight = getHeight() / grid.getHeight();
-		for (int i=0; i<grid.getWidth(); i++) {
-			for (int j=0; j<grid.getWidth(); j++) {
-				Square square = grid.get(i,j);
-				boolean debugDot = DEBUG && grid.upperLeftGroupContains(square);
-				square.paint(g, i * squareWidth, j * squareHeight,
-						squareWidth, squareHeight, debugDot);
+	private Canvas canvas = new Canvas() {
+		@Override
+		public void paint(Graphics g) {
+			int squareWidth = getWidth() / grid.getWidth();
+			int squareHeight = getHeight() / grid.getHeight();
+			for (int i=0; i<grid.getWidth(); i++) {
+				for (int j=0; j<grid.getWidth(); j++) {
+					Square square = grid.get(i,j);
+					boolean debugDot = DEBUG && grid.upperLeftGroupContains(square);
+					square.paint(g, i * squareWidth, j * squareHeight,
+							squareWidth, squareHeight, debugDot);
+				}
 			}
 		}
-	}
-
-	public void addMenuBar() {
-		JMenuBar menubar = new JMenuBar();
-
-	}
+	};
 
 	public Floodit() {
 		grid = new Grid(10, 10);
@@ -56,16 +49,25 @@ public class Floodit extends Canvas {
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.gridwidth = Square.colors().size();
 
-		panel.add(this, constraints);
+		canvas.setSize(800, 800);
+		panel.add(canvas, constraints);
 		addButtons();
-		this.setSize(800, 800);
+
 		panel.setVisible(true);
 
-		JFrame window = new JFrame();
+		JFrame window = new JFrame("Flood It");
 		window.setSize(900, 900);
 		window.add(panel);
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.setVisible(true);
+	}
+
+	public static void main(String[] args) {
+		new Floodit();
+	}
+
+	public void addMenuBar() {
+		JMenuBar menubar = new JMenuBar();
 	}
 
 	private void addButtons() {
@@ -87,7 +89,7 @@ public class Floodit extends Canvas {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					grid.changeUpperLeftGroupToColor(color);
-					repaint();
+					canvas.repaint();
 				}
 			});
 			constraints = new GridBagConstraints();
