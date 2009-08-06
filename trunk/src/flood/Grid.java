@@ -1,17 +1,38 @@
 package flood;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+
+import common.RandomUtils;
 
 public class Grid {
 
 	private Square[][] data;
 
 	private Collection<Square> upperLeftGroup = new ArrayList<Square>();
+
+	public Grid(int width, int height, int numColors) {
+		List<Color> colors = Square.colors().subList(0, numColors);
+
+		data = new Square[width][height];
+		for (int i=0; i<width; i++) {
+			for (int j=0; j<height; j++) {
+				data[i][j] = new Square(RandomUtils.choice(colors));
+			}
+		}
+		upperLeftGroup.add(get(0,0));
+		update();
+	}
+
+	public Grid(Dimension gridSize, int numColors) {
+		this(gridSize.width, gridSize.height, numColors);
+	}
 
 	public void changeUpperLeftGroupToColor(Color color) {
 		for (Square square : upperLeftGroup) {
@@ -20,8 +41,8 @@ public class Grid {
 		update();
 	}
 
-	public void expandUpperLeftGroup() {
-		upperLeftGroup.add(data[0][0]);
+	private void expandUpperLeftGroup() {
+		// TODO use allSquares() or other iterable (difficult because of the getNeighbors() call)
 		for (int i=0; i<getWidth(); i++) {
 			for (int j=0; j<getHeight(); j++) {
 				Square square = get(i, j);
@@ -54,23 +75,53 @@ public class Grid {
 		expandUpperLeftGroup();
 	}
 
+	public boolean isAllSameColor() {
+		Square upperLeft = get(0,0);
+		for (Square square : allSquares()) {
+			if (!upperLeft.sameColor(square)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public Iterable<Square> allSquares() {
+		return new Iterable<Square>() {
+			public Iterator<Square> iterator() {
+				return new Iterator<Square>() {
+					private int x=0, y=0;
+
+					@Override public boolean hasNext() {
+						return y != getHeight();
+					}
+
+					@Override public Square next() {
+						Square square = get(x,y);
+						if (Floodit.DEBUG) {
+							System.out.format("Grid.allSquares(): %d, %d%n", x, y);
+						}
+						x++;
+						if (x == getWidth()) {
+							x = 0;
+							y++;
+						}
+						return square;
+					}
+
+					@Override public void remove() {
+						throw new UnsupportedOperationException();
+					}
+				};
+			}
+		};
+	}
+
 	public int getWidth() {
 		return data.length;
 	}
 
 	public int getHeight() {
 		return data[0].length;
-	}
-
-	public Grid(int width, int height) {
-		data = new Square[width][height];
-		for (int i=0; i<width; i++) {
-			for (int j=0; j<height; j++) {
-				data[i][j] = Square.getRandomInstance();
-			}
-		}
-		upperLeftGroup.add(get(0,0));
-		update();
 	}
 
 	@Override

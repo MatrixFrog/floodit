@@ -2,6 +2,7 @@ package flood;
 
 import java.awt.Canvas;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
@@ -12,7 +13,9 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 /**
@@ -20,13 +23,16 @@ import javax.swing.JPanel;
  */
 public class Floodit {
 
-	//private static final boolean DEBUG = true;
-	private static final boolean DEBUG = false;
+	protected static final boolean DEBUG = false;
+	//protected static final boolean DEBUG = false;
 
+	private JFrame window = new JFrame("Flood It");
 	private JPanel panel;
 	private Grid grid;
 	private int numMoves = 0;
 	private JLabel numMovesLabel = new JLabel("0", JLabel.LEFT);
+	private JMenu gameMenu;
+	private JMenu helpMenu;
 
 	private Canvas canvas = new Canvas() {
 		@Override
@@ -47,44 +53,57 @@ public class Floodit {
 	public Floodit() {
 		GridBagConstraints constraints;
 
-		grid = new Grid(10, 10);
 		panel = new JPanel(new GridBagLayout());
-		panel.setSize(800, 800);
-		//addMenuBar();
 
-		canvas.setSize(800, 800);
+		canvas.setSize(750, 750);
 
-		constraints = new GridBagConstraints();
-		constraints.gridx = 0;
-		constraints.anchor = GridBagConstraints.NORTHWEST;
-		numMovesLabel.setSize(100, 100);
-		numMovesLabel.setFont(new Font("Dialog", Font.BOLD, 34));
-		panel.add(numMovesLabel, constraints);
+		addNumMovesLabel();
 
 		constraints = new GridBagConstraints();
 		constraints.gridx = 1;
-		//constraints.gridwidth = Square.colors().size();
 		panel.add(canvas, constraints);
 
 		addButtons();
 
 		panel.setVisible(true);
 
-		JFrame window = new JFrame("Flood It");
-		window.setSize(1000, 900);
+		addMenuBar();
+		window.setSize(1200, 900);
 		window.add(panel);
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.setVisible(true);
 
+		newGame();
+
 		update();
 	}
 
-	public static void main(String[] args) {
-		new Floodit();
+	private void addNumMovesLabel() {
+		GridBagConstraints constraints;
+		constraints = new GridBagConstraints();
+		constraints.gridx = 0;
+		constraints.anchor = GridBagConstraints.NORTHWEST;
+		numMovesLabel.setSize(100, 100);
+		numMovesLabel.setFont(new Font("Dialog", Font.BOLD, 34));
+		panel.add(numMovesLabel, constraints);
 	}
 
-	public void addMenuBar() {
-		JMenuBar menubar = new JMenuBar();
+	private void addMenuBar() {
+		JMenuBar menuBar = new JMenuBar();
+		gameMenu = new JMenu("Game");
+		gameMenu.add("New");
+		gameMenu.add("Undo");
+		gameMenu.add("Redo");
+		gameMenu.add("High scores");
+
+		helpMenu = new JMenu("Help");
+		helpMenu.add("Instructions");
+		helpMenu.add("About");
+
+		menuBar.add(gameMenu);
+		menuBar.add(helpMenu);
+
+		window.setJMenuBar(menuBar);
 	}
 
 	private void addButtons() {
@@ -119,8 +138,35 @@ public class Floodit {
 		}
 	}
 
+	public void newGame(Dimension gridSize, int numColors) {
+		grid = new Grid(gridSize, numColors);
+		numMoves = 0;
+		update();
+	}
+
+	public void newGame() {
+		// TODO display a little window that lets you choose what kind of game you want
+		// For now, just hard-code a default value.
+		newGame(new Dimension(10, 10), 4);
+	}
+
+	public static void main(String[] args) {
+		new Floodit();
+	}
+
 	public void update() {
 		canvas.repaint();
 		numMovesLabel.setText(Integer.toString(numMoves));
+
+		if (grid.isAllSameColor()) {
+			displayWinMessage();
+			newGame();
+		}
+	}
+
+	private void displayWinMessage() {
+		JOptionPane.showMessageDialog(window, "You win!",
+				"Congratulations", JOptionPane.PLAIN_MESSAGE);
+
 	}
 }

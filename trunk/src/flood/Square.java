@@ -2,15 +2,16 @@ package flood;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import common.RandomUtil;
+import common.RandomUtils;
 
 public class Square {
 	private Color color;
-	private static final Map<Color, Character> colorsNames = new HashMap<Color, Character>() {{
+	private static final Map<Color, Character> colorsAndNames = new HashMap<Color, Character>() {{
 		put(Color.red, 'R');
 		put(Color.green, 'G');
 		put(Color.blue, 'B');
@@ -20,16 +21,20 @@ public class Square {
 		put(Color.white, 'W');
 	}};
 
-	public static Collection<Color> colors() {
-		return colorsNames.keySet();
+	public static List<Color> colors() {
+		List<Color> colorList = new ArrayList<Color>();
+		for (Color color : colorsAndNames.keySet()) {
+			colorList.add(color);
+		}
+		return colorList;
 	}
 
 	public static Map<Color, Character> colorsNames() {
-		return colorsNames;
+		return colorsAndNames;
 	}
 
 	public static Square getRandomInstance() {
-		return new Square((Color) RandomUtil.choice(colorsNames.keySet().toArray()));
+		return new Square((Color) RandomUtils.choice(colorsAndNames.keySet().toArray()));
 	}
 
 	public Square(Color color) {
@@ -50,7 +55,7 @@ public class Square {
 
 	@Override
 	public String toString() {
-		return colorsNames.get(color).toString();
+		return colorsAndNames.get(color).toString();
 	}
 
 	/**
