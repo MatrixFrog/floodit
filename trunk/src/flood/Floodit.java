@@ -8,31 +8,39 @@ import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 
 /**
  * An attempt to clone the iPhone game Floodit
  */
 public class Floodit {
 
-	protected static final boolean DEBUG = false;
-	//protected static final boolean DEBUG = false;
+	protected static final boolean DEBUG = true;
 
 	private JFrame window = new JFrame("Flood It");
 	private JPanel panel;
 	private Grid grid;
+	private JPanel buttonPanel;
 	private int numMoves = 0;
 	private JLabel numMovesLabel = new JLabel("0", JLabel.LEFT);
 	private JMenu gameMenu;
 	private JMenu helpMenu;
+
+	private static List<SelectColorAction> allSelectColorActions =
+		new ArrayList<SelectColorAction>();
 
 	private Canvas canvas = new Canvas() {
 		@Override
@@ -49,7 +57,6 @@ public class Floodit {
 			}
 		}
 	};
-
 	public Floodit() {
 		GridBagConstraints constraints;
 
@@ -61,14 +68,18 @@ public class Floodit {
 
 		constraints = new GridBagConstraints();
 		constraints.gridx = 1;
+		constraints.weightx = 5;
 		panel.add(canvas, constraints);
 
-		addButtons();
-
-		panel.setVisible(true);
+		buttonPanel = new JPanel();
+		constraints = new GridBagConstraints();
+		constraints.fill = GridBagConstraints.HORIZONTAL;
+		constraints.gridy = 1;
+		constraints.gridwidth = 2;
+		panel.add(buttonPanel, constraints);
 
 		addMenuBar();
-		window.setSize(1200, 900);
+		window.setSize(1100, 900);
 		window.add(panel);
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.setVisible(true);
@@ -82,7 +93,8 @@ public class Floodit {
 		GridBagConstraints constraints;
 		constraints = new GridBagConstraints();
 		constraints.gridx = 0;
-		constraints.anchor = GridBagConstraints.NORTHWEST;
+		constraints.weightx = 1;
+		constraints.anchor = GridBagConstraints.NORTHEAST;
 		numMovesLabel.setSize(100, 100);
 		numMovesLabel.setFont(new Font("Dialog", Font.BOLD, 34));
 		panel.add(numMovesLabel, constraints);
@@ -91,7 +103,7 @@ public class Floodit {
 	private void addMenuBar() {
 		JMenuBar menuBar = new JMenuBar();
 		gameMenu = new JMenu("Game");
-		gameMenu.add("New");
+		gameMenu.add(new JMenuItem(new NewGameAction(this)));
 		gameMenu.add("Undo");
 		gameMenu.add("Redo");
 		gameMenu.add("High scores");
@@ -106,31 +118,16 @@ public class Floodit {
 		window.setJMenuBar(menuBar);
 	}
 
-	private void addButtons() {
-		JPanel buttonPanel = new JPanel();
-		GridBagConstraints constraints = new GridBagConstraints();
-		constraints.fill = GridBagConstraints.HORIZONTAL;
-		constraints.gridy = 1;
-		constraints.gridwidth = 2;
-		panel.add(buttonPanel, constraints);
+	private void updateButtons() {
+		buttonPanel.removeAll();
 
 		int i=0;
-		for (final Color color : Square.colorsNames().keySet()) {
-			Character name = Square.colorsNames().get(color);
-			JButton button = new JButton(name.toString());
-			button.setBackground(color);
-			button.setMnemonic(name);
+		for (Color color : grid.colors()) {
+			JButton button = new JButton(new SelectColorAction(this, color));
 
-			button.setSize(50, 50);
-			button.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					grid.changeUpperLeftGroupToColor(color);
-					numMoves++;
-					update();
-				}
-			});
-			constraints = new GridBagConstraints();
+			button.setBackground(color);
+
+			GridBagConstraints constraints = new GridBagConstraints();
 			constraints.gridx = i++;
 			constraints.weightx = 1;
 			constraints.ipady = 10;
@@ -141,6 +138,8 @@ public class Floodit {
 	public void newGame(Dimension gridSize, int numColors) {
 		grid = new Grid(gridSize, numColors);
 		numMoves = 0;
+		allSelectColorActions.clear();
+		updateButtons();
 		update();
 	}
 
@@ -165,8 +164,49 @@ public class Floodit {
 	}
 
 	private void displayWinMessage() {
-		JOptionPane.showMessageDialog(window, "You win!",
+		JOptionPane.showMessageDialog(window, "You win with " + numMoves + " moves!",
 				"Congratulations", JOptionPane.PLAIN_MESSAGE);
+	}
 
+	static class NewGameAction extends AbstractAction {
+		private Floodit floodit;
+
+		public NewGameAction(Floodit floodit) {
+			super("New game...");
+			this.floodit = floodit;
+	        putValue(SHORT_DESCRIPTION, "Start a new game.");
+	        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(
+	                KeyEvent.VK_N, ActionEvent.CTRL_MASK));
+		}
+
+		@Override public void actionPerformed(ActionEvent e) {
+			floodit.newGame();
+		}
+	}
+
+	static class SelectColorAction extends AbstractAction {
+		private Color color;
+		private Floodit floodit;
+
+		public SelectColorAction(Floodit floodit, Color color) {
+			super(Square.colorsNames().get(color).toString());
+			this.floodit = floodit;
+			this.color = color;
+			putValue(ACTION_COMMAND_KEY, Square.colorsNames().get(color).toString());
+			allSelectColorActions.add(this);
+			if (DEBUG) {
+				System.out.println(allSelectColorActions.size());
+			}
+		}
+
+		@Override public void actionPerformed(ActionEvent e) {
+			for (SelectColorAction action : allSelectColorActions) {
+				action.setEnabled(true);
+			}
+			this.setEnabled(false);
+			floodit.grid.changeUpperLeftGroupToColor(color);
+			floodit.numMoves++;
+			floodit.update();
+		}
 	}
 }

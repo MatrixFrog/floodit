@@ -12,13 +12,13 @@ import common.RandomUtils;
 public class Square {
 	private Color color;
 	private static final Map<Color, Character> colorsAndNames = new HashMap<Color, Character>() {{
-		put(Color.red, 'R');
-		put(Color.green, 'G');
-		put(Color.blue, 'B');
-		put(Color.yellow, 'Y');
-		put(Color.magenta, 'M');
-		put(Color.black, 'L');
-		put(Color.white, 'W');
+		put(Color.red, 'r');
+		put(Color.green, 'g');
+		put(Color.blue, 'b');
+		put(Color.yellow, 'y');
+		put(Color.magenta, 'm');
+		put(Color.black, 'l');
+		put(Color.white, 'w');
 	}};
 
 	public static List<Color> colors() {

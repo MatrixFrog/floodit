@@ -14,16 +14,16 @@ import common.RandomUtils;
 public class Grid {
 
 	private Square[][] data;
-
+	private int numColors;
 	private Collection<Square> upperLeftGroup = new ArrayList<Square>();
 
 	public Grid(int width, int height, int numColors) {
-		List<Color> colors = Square.colors().subList(0, numColors);
+		this.numColors = numColors;
 
 		data = new Square[width][height];
 		for (int i=0; i<width; i++) {
 			for (int j=0; j<height; j++) {
-				data[i][j] = new Square(RandomUtils.choice(colors));
+				data[i][j] = new Square(RandomUtils.choice(colors()));
 			}
 		}
 		upperLeftGroup.add(get(0,0));
@@ -32,6 +32,11 @@ public class Grid {
 
 	public Grid(Dimension gridSize, int numColors) {
 		this(gridSize.width, gridSize.height, numColors);
+	}
+
+	public List<Color> colors() {
+		List<Color> colors = Square.colors().subList(0, numColors);
+		return colors;
 	}
 
 	public void changeUpperLeftGroupToColor(Color color) {
@@ -97,9 +102,6 @@ public class Grid {
 
 					@Override public Square next() {
 						Square square = get(x,y);
-						if (Floodit.DEBUG) {
-							System.out.format("Grid.allSquares(): %d, %d%n", x, y);
-						}
 						x++;
 						if (x == getWidth()) {
 							x = 0;
