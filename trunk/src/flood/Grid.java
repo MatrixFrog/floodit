@@ -6,6 +6,7 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -14,16 +15,15 @@ import common.RandomUtils;
 public class Grid {
 
 	private Square[][] data;
-	private int numColors;
 	private Collection<Square> upperLeftGroup = new ArrayList<Square>();
+	private List<Color> colors = new ArrayList<Color>();
 
 	public Grid(int width, int height, int numColors) {
-		this.numColors = numColors;
-
+		initColors(numColors);
 		data = new Square[width][height];
 		for (int i=0; i<width; i++) {
 			for (int j=0; j<height; j++) {
-				data[i][j] = new Square(RandomUtils.choice(colors()));
+				data[i][j] = new Square(RandomUtils.choice(colors));
 			}
 		}
 		upperLeftGroup.add(get(0,0));
@@ -34,9 +34,17 @@ public class Grid {
 		this(gridSize.width, gridSize.height, numColors);
 	}
 
-	public List<Color> colors() {
-		List<Color> colors = Square.colors().subList(0, numColors);
-		return colors;
+	private void initColors(int numColors) {
+		List<Color> allColors = Square.colors();
+		Collections.shuffle(allColors);
+
+		for (int i=0; i<numColors; i++) {
+			colors.add(allColors.get(i));
+		}
+	}
+
+	public Color getUpperLeftColor() {
+		return get(0,0).getColor();
 	}
 
 	public void changeUpperLeftGroupToColor(Color color) {
@@ -62,6 +70,10 @@ public class Grid {
 				}
 			}
 		}
+	}
+
+	public boolean upperLeftGroupContains(Square square) {
+		return upperLeftGroup.contains(square);
 	}
 
 	public boolean contains(Point p) {
@@ -146,7 +158,7 @@ public class Grid {
 		return data[i][j];
 	}
 
-	public boolean upperLeftGroupContains(Square square) {
-		return upperLeftGroup.contains(square);
+	public List<Color> getColors() {
+		return colors;
 	}
 }
