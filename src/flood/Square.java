@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import common.RandomUtils;
+import common.swingutils.Colors;
 
 public class Square {
 	private Color color;
@@ -17,7 +18,8 @@ public class Square {
 		put(Color.blue, 'b');
 		put(Color.yellow, 'y');
 		put(Color.magenta, 'm');
-		put(Color.black, 'l');
+		put(Color.cyan, 'c');
+		put(Color.orange, 'o');
 		put(Color.white, 'w');
 	}};
 
@@ -71,9 +73,13 @@ public class Square {
 		g.setColor(getColor());
 		g.fillRect(x, y, width, height);
 		if (addDebugDot) {
-			g.setColor(Color.black);
+			g.setColor(Colors.getOpposite(getColor()));
 			g.fillOval(x+width/3, y+height/3, width/3, height/3);
 		}
+	}
+
+	public static char getName(Color color_arg) {
+		return colorsNames().get(color_arg);
 	}
 
 }

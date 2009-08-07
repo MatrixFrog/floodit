@@ -14,6 +14,7 @@ import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -28,7 +29,7 @@ import javax.swing.KeyStroke;
  */
 public class Floodit {
 
-	protected static final boolean DEBUG = true;
+	protected static final boolean DEBUG = false;
 
 	private JFrame window = new JFrame("Flood It");
 	private JPanel panel;
@@ -39,7 +40,7 @@ public class Floodit {
 	private JMenu gameMenu;
 	private JMenu helpMenu;
 
-	private static List<SelectColorAction> allSelectColorActions =
+	private List<SelectColorAction> allSelectColorActions =
 		new ArrayList<SelectColorAction>();
 
 	private Canvas canvas = new Canvas() {
@@ -57,6 +58,7 @@ public class Floodit {
 			}
 		}
 	};
+
 	public Floodit() {
 		GridBagConstraints constraints;
 
@@ -120,18 +122,33 @@ public class Floodit {
 
 	private void updateButtons() {
 		buttonPanel.removeAll();
+		panel.getActionMap();
 
-		int i=0;
-		for (Color color : grid.colors()) {
-			JButton button = new JButton(new SelectColorAction(this, color));
+		GridBagConstraints constraints = new GridBagConstraints();
+		constraints.gridx = 0;
+		constraints.weightx = 1;
+		constraints.ipady = 10;
 
-			button.setBackground(color);
+		for (final Color color : grid.getColors()) {
+			char name = Square.getName(color);
+			SelectColorAction action = new SelectColorAction(this, color);
+			JButton button = new JButton(action) {
+				@Override public void setEnabled(boolean enabled) {
+					super.setEnabled(enabled);
+					if (enabled) {
+						setBackground(color);
+					} else {
+						setBackground(Color.gray);
+					}
+				}
+			};
 
-			GridBagConstraints constraints = new GridBagConstraints();
-			constraints.gridx = i++;
-			constraints.weightx = 1;
-			constraints.ipady = 10;
+			button.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+					KeyStroke.getKeyStroke(name), name);
+			button.getActionMap().put(name, action);
+
 			buttonPanel.add(button, constraints);
+			constraints.gridx++;
 		}
 	}
 
@@ -154,9 +171,9 @@ public class Floodit {
 	}
 
 	public void update() {
-		canvas.repaint();
 		numMovesLabel.setText(Integer.toString(numMoves));
-
+		canvas.repaint();
+		panel.validate();
 		if (grid.isAllSameColor()) {
 			displayWinMessage();
 			newGame();
@@ -184,7 +201,7 @@ public class Floodit {
 		}
 	}
 
-	static class SelectColorAction extends AbstractAction {
+	class SelectColorAction extends AbstractAction {
 		private Color color;
 		private Floodit floodit;
 
@@ -192,15 +209,17 @@ public class Floodit {
 			super(Square.colorsNames().get(color).toString());
 			this.floodit = floodit;
 			this.color = color;
-			putValue(ACTION_COMMAND_KEY, Square.colorsNames().get(color).toString());
-			allSelectColorActions.add(this);
-			if (DEBUG) {
-				System.out.println(allSelectColorActions.size());
+			//putValue(ACTION_COMMAND_KEY, Square.colorsNames().get(color).toString());
+			putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(
+					Square.colorsNames().get(color), KeyEvent.CTRL_MASK));
+			floodit.allSelectColorActions.add(this);
+			if (color.equals(floodit.grid.getUpperLeftColor())) {
+				setEnabled(false);
 			}
 		}
 
 		@Override public void actionPerformed(ActionEvent e) {
-			for (SelectColorAction action : allSelectColorActions) {
+			for (SelectColorAction action : floodit.allSelectColorActions) {
 				action.setEnabled(true);
 			}
 			this.setEnabled(false);
