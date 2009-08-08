@@ -38,6 +38,12 @@ public class Grid {
 
   private void initColors(int numColors) {
     List<Color> allColors = Square.colors();
+
+    if (numColors > allColors.size()) {
+      throw new IllegalArgumentException(
+          String.format("Flood It only knows of %d colors, so you cannot " +
+          		"have more than that in your grid.", allColors.size()));
+    }
     Collections.shuffle(allColors);
 
     for (int i = 0; i < numColors; i++) {
