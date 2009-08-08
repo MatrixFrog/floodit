@@ -1,4 +1,5 @@
 package flood;
+import static flood.Floodit.DEBUG;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -10,7 +11,7 @@ import java.util.Map;
 import common.RandomUtils;
 import common.swingutils.Colors;
 
-public class Square {
+class Square {
 	private Color color;
 	private static final Map<Color, Character> colorsAndNames = new HashMap<Color, Character>() {{
 		put(Color.red, 'r');
@@ -60,21 +61,20 @@ public class Square {
 		return colorsAndNames.get(color).toString();
 	}
 
-	/**
-	 * Equivalent to paint(g, x, y, width, height, false)
-	 */
-	public void paint(Graphics g, int x, int y,
+	void paint(Graphics g, int x, int y,
 			int width, int height) {
-		paint(g, x, y, width, height, false);
+		paint(g, x, y, width, height, DEBUG);
 	}
 
-	public void paint(Graphics g, int x, int y,
+	void paint(Graphics g, int x, int y,
 			int width, int height, boolean addDebugDot) {
 		g.setColor(getColor());
 		g.fillRect(x, y, width, height);
-		if (addDebugDot) {
+		if (addDebugDot && DEBUG) {
+			Color oldGraphicsColor = g.getColor();
 			g.setColor(Colors.getOpposite(getColor()));
 			g.fillOval(x+width/3, y+height/3, width/3, height/3);
+			g.setColor(oldGraphicsColor);
 		}
 	}
 
