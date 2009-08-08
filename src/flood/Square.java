@@ -18,7 +18,7 @@ class Square {
 		put(Color.green, 'g');
 		put(Color.blue, 'b');
 		put(Color.yellow, 'y');
-		put(Color.magenta, 'm');
+		put(Color.magenta, 'p');
 		put(Color.cyan, 'c');
 		put(Color.orange, 'o');
 		put(Color.white, 'w');

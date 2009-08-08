@@ -25,13 +25,13 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
+import javax.swing.UIManager;
 
 /**
  * An attempt to clone the iPhone game Floodit
  */
 public class Floodit {
-
-	static final boolean DEBUG = true;
+	static final boolean DEBUG = false;
 
 	private Grid grid;
 	private int numMoves = 0;
@@ -44,6 +44,15 @@ public class Floodit {
 
 	private List<SelectColorAction> allSelectColorActions =
 		new ArrayList<SelectColorAction>();
+
+	public static void main(String[] args) {
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (Exception e) {
+			/* Just use the ugly Swing look and feel =( */
+		}
+		new Floodit();
+	}
 
 	public Floodit() {
 		newGame();
@@ -103,8 +112,8 @@ public class Floodit {
 		gameMenu.add("High scores");
 
 		JMenu helpMenu = new JMenu("Help");
-		helpMenu.add("Instructions");
-		helpMenu.add("About");
+		helpMenu.add(new HelpAction(this.window));
+		helpMenu.add(new AboutAction(this.window));
 
 		menuBar.add(gameMenu);
 		menuBar.add(helpMenu);
@@ -137,6 +146,9 @@ public class Floodit {
 				}
 			};
 
+			button.setFont(new Font("Dialog", Font.BOLD, 16));
+
+			// Make keyboard shortcuts work
 			button.getInputMap(WHEN_IN_FOCUSED_WINDOW).put(
 					KeyStroke.getKeyStroke(name), name);
 			button.getActionMap().put(name, action);
@@ -157,11 +169,8 @@ public class Floodit {
 	public void newGame() {
 		// TODO display a little window that lets you choose what kind of game you want
 		// For now, just hard-code a default value.
-		newGame(new Dimension(10, 10), 4);
-	}
 
-	public static void main(String[] args) {
-		new Floodit();
+		newGame(new Dimension(10, 10), 4);
 	}
 
 	public void update() {
@@ -197,12 +206,12 @@ public class Floodit {
 		}
 	}
 
-	class SelectColorAction extends AbstractAction {
+	static class SelectColorAction extends AbstractAction {
 		private Color color;
 		private Floodit floodit;
 
 		public SelectColorAction(Floodit floodit, Color color) {
-			super(Square.colorsNames().get(color).toString());
+			super(Square.colorsNames().get(color).toString().toUpperCase());
 			this.floodit = floodit;
 			this.color = color;
 			//putValue(ACTION_COMMAND_KEY, Square.colorsNames().get(color).toString());
@@ -223,5 +232,10 @@ public class Floodit {
 			floodit.numMoves++;
 			floodit.update();
 		}
+	}
+
+	static abstract class ShowHelpAction extends AbstractAction {
+
+
 	}
 }

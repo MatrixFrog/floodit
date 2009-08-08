@@ -48,10 +48,6 @@ public class GridTest {
 	public void testColors(int numColors) {
 		Grid grid = new Grid(new Dimension(10, 10), numColors);
 		List<Color> colors = grid.getColors();
-		for (Color c : colors) {
-			System.out.print(new Square(c));
-		}
-		System.out.println();
 		assertEquals(numColors, colors.size());
 	}
 
@@ -64,11 +60,10 @@ public class GridTest {
 	public void testIteration(int width, int height) {
 		Grid g = new Grid(width, height, 4);
 		int i=0;
-		for (Square square: g.allSquares()) {
-			System.out.print(square);
+		for (@SuppressWarnings("unused")
+				Square square: g.allSquares()) {
 			i++;
 		}
-		System.out.println();
 		assertEquals(width*height, i);
 	}
 
@@ -82,5 +77,7 @@ public class GridTest {
 		testIteration(5, 5);
 		testIteration(10, 10);
 		testIteration(20, 30);
+		testIteration(1, 75);
+		testIteration(75, 1);
 	}
 }
