@@ -36,6 +36,10 @@ public class Grid {
     this(gridSize.width, gridSize.height, numColors);
   }
 
+  public Grid(GameSettings settings) {
+    this(settings.width, settings.height, settings.numColors);
+  }
+
   private void initColors(int numColors) {
     List<Color> allColors = Square.colors();
 

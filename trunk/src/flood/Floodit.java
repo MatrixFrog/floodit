@@ -30,13 +30,12 @@ import javax.swing.UIManager;
 /**
  * An attempt to clone the iPhone game Floodit
  */
-public class Floodit {
-  static final boolean DEBUG = false;
+public class Floodit extends JFrame {
+  static final boolean DEBUG = true;
 
   private Grid grid;
   private int numMoves = 0;
 
-  private JFrame window = new JFrame("Flood It");
   private JPanel panel = new JPanel(new GridBagLayout());
   private JPanel buttonPanel = new JPanel(new GridBagLayout());;
   private JLabel numMovesLabel = new JLabel("0", JLabel.LEFT);
@@ -54,17 +53,18 @@ public class Floodit {
   }
 
   public Floodit() {
-    newGame();
+    super("FloodIt");
+    newGame(GameSettings.get("Novice"));
 
     addNumMovesLabel();
     addCanvas();
     addButtonPanel();
     addMenuBar();
 
-    window.setSize(1100, 900);
-    window.add(panel);
-    window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    window.setVisible(true);
+    this.setSize(1100, 900);
+    this.add(panel);
+    this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    this.setVisible(true);
 
     update();
   }
@@ -112,13 +112,13 @@ public class Floodit {
     gameMenu.add("High scores");
 
     JMenu helpMenu = new JMenu("Help");
-    helpMenu.add(new HelpAction(this.window));
-    helpMenu.add(new AboutAction(this.window));
+    helpMenu.add(new HelpAction(this));
+    helpMenu.add(new AboutAction(this));
 
     menuBar.add(gameMenu);
     menuBar.add(helpMenu);
 
-    window.setJMenuBar(menuBar);
+    this.setJMenuBar(menuBar);
   }
 
   private void updateButtons() {
@@ -159,20 +159,15 @@ public class Floodit {
     }
   }
 
+  public void newGame(GameSettings settings) {
+    newGame(new Dimension(settings.width, settings.height), settings.numColors);
+  }
+
   public void newGame(Dimension gridSize, int numColors) {
     grid = new Grid(gridSize, numColors);
     numMoves = 0;
     allSelectColorActions.clear();
     updateButtons();
-    // update();
-  }
-
-  public void newGame() {
-    // TODO display a little window that lets you choose what kind of game you
-    // want
-    // For now, just hard-code a default value.
-
-    newGame(new Dimension(10, 10), 4);
   }
 
   public void update() {
@@ -181,32 +176,36 @@ public class Floodit {
     panel.validate();
     if (grid.isAllSameColor()) {
       displayWinMessage();
-      newGame();
-      update();
     }
   }
 
   private void displayWinMessage() {
-    JOptionPane.showMessageDialog(window, "You win with " + numMoves
-        + " moves!", "Congratulations", JOptionPane.PLAIN_MESSAGE);
+    Object[] options = {
+        "New game", "Exit"
+    };
+    int option = JOptionPane.showOptionDialog(this, "You win with " + numMoves
+        + " moves!", "Congratulations", JOptionPane.YES_NO_OPTION,
+        JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
+    if (DEBUG) {
+      System.out.println("option=" + option);
+      System.out.println("yes=" + JOptionPane.YES_OPTION);
+      System.out.println("no=" + JOptionPane.NO_OPTION);
+    }
+    switch (option) {
+    case JOptionPane.YES_OPTION:
+      new NewGameDialog(this);
+      update();
+      break;
+    case JOptionPane.NO_OPTION:
+      close();
+      break;
+    default:
+      // Do nothing
+    }
   }
 
-  static class NewGameAction extends AbstractAction {
-    private Floodit floodit;
-
-    public NewGameAction(Floodit floodit) {
-      super("New game...");
-      this.floodit = floodit;
-      putValue(SHORT_DESCRIPTION, "Start a new game.");
-      putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_N,
-          ActionEvent.CTRL_MASK));
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-      floodit.newGame();
-      floodit.update();
-    }
+  public void close() {
+    System.exit(0);
   }
 
   static class SelectColorAction extends AbstractAction {
@@ -217,8 +216,6 @@ public class Floodit {
       super(Square.colorsNames().get(color).toString().toUpperCase());
       this.floodit = floodit;
       this.color = color;
-      // putValue(ACTION_COMMAND_KEY,
-      // Square.colorsNames().get(color).toString());
       putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(Square.colorsNames()
           .get(color), KeyEvent.CTRL_MASK));
       floodit.allSelectColorActions.add(this);
@@ -239,7 +236,4 @@ public class Floodit {
     }
   }
 
-  static abstract class ShowHelpAction extends AbstractAction {
-
-  }
 }
