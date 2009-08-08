@@ -1,5 +1,7 @@
 package flood;
 
+import static javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW;
+
 import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -7,6 +9,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
@@ -14,7 +17,6 @@ import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -29,88 +31,78 @@ import javax.swing.KeyStroke;
  */
 public class Floodit {
 
-	protected static final boolean DEBUG = false;
+	static final boolean DEBUG = true;
+
+	private Grid grid;
+	private int numMoves = 0;
 
 	private JFrame window = new JFrame("Flood It");
-	private JPanel panel;
-	private Grid grid;
-	private JPanel buttonPanel;
-	private int numMoves = 0;
+	private JPanel panel = new JPanel(new GridBagLayout());
+	private JPanel buttonPanel = new JPanel(new GridBagLayout());;
 	private JLabel numMovesLabel = new JLabel("0", JLabel.LEFT);
-	private JMenu gameMenu;
-	private JMenu helpMenu;
+	private Canvas canvas;
 
 	private List<SelectColorAction> allSelectColorActions =
 		new ArrayList<SelectColorAction>();
 
-	private Canvas canvas = new Canvas() {
-		@Override
-		public void paint(Graphics g) {
-			int squareWidth = getWidth() / grid.getWidth();
-			int squareHeight = getHeight() / grid.getHeight();
-			for (int i=0; i<grid.getWidth(); i++) {
-				for (int j=0; j<grid.getWidth(); j++) {
-					Square square = grid.get(i,j);
-					boolean debugDot = DEBUG && grid.upperLeftGroupContains(square);
-					square.paint(g, i * squareWidth, j * squareHeight,
-							squareWidth, squareHeight, debugDot);
-				}
-			}
-		}
-	};
-
 	public Floodit() {
-		GridBagConstraints constraints;
-
-		panel = new JPanel(new GridBagLayout());
-
-		canvas.setSize(750, 750);
+		newGame();
 
 		addNumMovesLabel();
-
-		constraints = new GridBagConstraints();
-		constraints.gridx = 1;
-		constraints.weightx = 5;
-		panel.add(canvas, constraints);
-
-		buttonPanel = new JPanel();
-		constraints = new GridBagConstraints();
-		constraints.fill = GridBagConstraints.HORIZONTAL;
-		constraints.gridy = 1;
-		constraints.gridwidth = 2;
-		panel.add(buttonPanel, constraints);
-
+		addCanvas();
+		addButtonPanel();
 		addMenuBar();
+
 		window.setSize(1100, 900);
 		window.add(panel);
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.setVisible(true);
 
-		newGame();
-
 		update();
 	}
 
 	private void addNumMovesLabel() {
-		GridBagConstraints constraints;
-		constraints = new GridBagConstraints();
+		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.gridx = 0;
+		constraints.gridy = 0;
 		constraints.weightx = 1;
 		constraints.anchor = GridBagConstraints.NORTHEAST;
-		numMovesLabel.setSize(100, 100);
 		numMovesLabel.setFont(new Font("Dialog", Font.BOLD, 34));
 		panel.add(numMovesLabel, constraints);
 	}
 
+	private void addCanvas() {
+		GridBagConstraints constraints = new GridBagConstraints();
+		canvas = new Canvas() {
+			@Override public void paint(Graphics g) {
+				grid.paint(g, getWidth(), getHeight());
+			}
+		};
+		canvas.setSize(750, 750);
+		constraints.gridx = 1;
+		constraints.gridy = 0;
+		constraints.weightx = 5;
+		panel.add(canvas, constraints);
+	}
+
+	private void addButtonPanel() {
+		GridBagConstraints constraints = new GridBagConstraints();
+		//constraints.fill = GridBagConstraints.HORIZONTAL;
+		constraints.gridx = 1;
+		constraints.gridy = 1;
+		//constraints.gridwidth = 2;
+		panel.add(buttonPanel, constraints);
+	}
+
 	private void addMenuBar() {
 		JMenuBar menuBar = new JMenuBar();
-		gameMenu = new JMenu("Game");
+		JMenu gameMenu = new JMenu("Game");
 		gameMenu.add(new JMenuItem(new NewGameAction(this)));
 		gameMenu.add("Undo");
 		gameMenu.add("Redo");
 		gameMenu.add("High scores");
 
-		helpMenu = new JMenu("Help");
+		JMenu helpMenu = new JMenu("Help");
 		helpMenu.add("Instructions");
 		helpMenu.add("About");
 
@@ -122,12 +114,14 @@ public class Floodit {
 
 	private void updateButtons() {
 		buttonPanel.removeAll();
-		panel.getActionMap();
 
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.gridx = 0;
+		constraints.gridy = 0;
 		constraints.weightx = 1;
-		constraints.ipady = 10;
+		constraints.ipadx = 20;
+		constraints.ipady = 20;
+		constraints.insets = new Insets(10, 10, 10, 10);
 
 		for (final Color color : grid.getColors()) {
 			char name = Square.getName(color);
@@ -143,7 +137,7 @@ public class Floodit {
 				}
 			};
 
-			button.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+			button.getInputMap(WHEN_IN_FOCUSED_WINDOW).put(
 					KeyStroke.getKeyStroke(name), name);
 			button.getActionMap().put(name, action);
 
@@ -157,7 +151,7 @@ public class Floodit {
 		numMoves = 0;
 		allSelectColorActions.clear();
 		updateButtons();
-		update();
+		//update();
 	}
 
 	public void newGame() {
@@ -177,6 +171,7 @@ public class Floodit {
 		if (grid.isAllSameColor()) {
 			displayWinMessage();
 			newGame();
+			update();
 		}
 	}
 
@@ -198,6 +193,7 @@ public class Floodit {
 
 		@Override public void actionPerformed(ActionEvent e) {
 			floodit.newGame();
+			floodit.update();
 		}
 	}
 

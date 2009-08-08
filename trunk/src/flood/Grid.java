@@ -2,20 +2,21 @@ package flood;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
 import common.RandomUtils;
-
+import common.swingutils.Points;
 public class Grid {
 
 	private Square[][] data;
-	private Collection<Square> upperLeftGroup = new ArrayList<Square>();
+	private Collection<Square> upperLeftGroup = new HashSet<Square>();
 	private List<Color> colors = new ArrayList<Color>();
 
 	public Grid(int width, int height, int numColors) {
@@ -55,37 +56,55 @@ public class Grid {
 	}
 
 	private void expandUpperLeftGroup() {
-		// TODO use allSquares() or other iterable (difficult because of the getNeighbors() call)
-		for (int i=0; i<getWidth(); i++) {
-			for (int j=0; j<getHeight(); j++) {
-				Square square = get(i, j);
-				for (Point p : getNeighbors(new Point(i, j))) {
-					if (this.contains(p)) {
-						Square neighbor = get(p);
-						if (upperLeftGroup.contains(neighbor) &&
-							square.sameColor(neighbor)) {
-							upperLeftGroup.add(square);
+		boolean squareWasAdded;
+		do {
+			squareWasAdded=false;
+			for (int x=0; x<getWidth(); x++) {
+				for (int y=0; y<getHeight(); y++) {
+					Square square = get(x, y);
+					for (Square neighbor : getNeighbors(x, y)) {
+						if (upperLeftGroup.contains(square) &&
+								square.sameColor(neighbor) &&
+								!upperLeftGroup.contains(neighbor)) {
+
+							upperLeftGroup.add(neighbor);
+							squareWasAdded = true;
+
 						}
 					}
 				}
 			}
+		} while (squareWasAdded);
+	}
+
+	/**
+	 * @return All the squares orthogonally adjacent to the square at (i, j).
+	 */
+	List<Square> getNeighbors(int i, int j) {
+		List<Square> neighbors = new ArrayList<Square>();
+		for (Point p : Points.getOrthoNeighbors(new Point(i, j))) {
+			if (this.contains(p)) {
+				neighbors.add(this.get(p));
+			}
 		}
+		return neighbors;
 	}
 
-	public boolean upperLeftGroupContains(Square square) {
-		return upperLeftGroup.contains(square);
-	}
-
-	public boolean contains(Point p) {
+	private boolean contains(Point p) {
 		return (0<=p.x && p.x<getWidth() &&
 				0<=p.y && p.y<getHeight());
 	}
 
-	public static List<Point> getNeighbors(Point p) {
-		return Arrays.asList(new Point(p.x-1, p.y),
-				new Point(p.x+1, p.y),
-				new Point(p.x, p.y+1),
-				new Point(p.x, p.y-1));
+	public void paint(Graphics g, int width, int height) {
+		int squareWidth = width / getWidth();
+		int squareHeight = height / getHeight();
+		for (int x=0; x<getWidth(); x++) {
+			for (int y=0; y<getHeight(); y++) {
+				this.get(x,y).paint(g,
+						x*squareWidth, y*squareHeight,
+						squareWidth, squareHeight, upperLeftGroup.contains(get(x,y)));
+			}
+		}
 	}
 
 	public void update() {
@@ -143,14 +162,19 @@ public class Grid {
 		StringBuilder sb = new StringBuilder();
 		for (int i=0; i<getWidth(); i++) {
 			for (int j=0; j<getHeight(); j++) {
-				sb.append(data[i][j].toString().charAt(0));
+				Square square = get(i,j);
+				String str = square.toString();
+				if (upperLeftGroup.contains(square)) {
+					str = str.toUpperCase();
+				}
+				sb.append(str);
 			}
 			sb.append('\n');
 		}
 		return sb.toString();
 	}
 
-	public Square get(Point p) {
+	private Square get(Point p) {
 		return get(p.x, p.y);
 	}
 
