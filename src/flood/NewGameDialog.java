@@ -4,31 +4,28 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
-import javax.swing.UIManager;
+import javax.swing.SpinnerNumberModel;
 
 public class NewGameDialog extends JDialog {
 
   private JPanel panel = new JPanel(new GridBagLayout());
-  private JTextField width = new JTextField(10);
-  private JTextField height = new JTextField(10);
-  private JSpinner numColors = new JSpinner();
+  //private JTextField width = new JTextField(10);
+  //private JTextField height = new JTextField(10);
+  //private JSpinner numColors = new JSpinner();
 
-  // unused
-  private JPanel widthPanel = labeledTextFieldPanel("Width: ", width);
-  private JPanel heightPanel = labeledTextFieldPanel("Height: ", height);
-
-  public NewGameDialog(JFrame owner) {
-    super(owner, "New Game");
+  public NewGameDialog(Floodit owner) {
+    super(owner, "New Game", true);
     this.add(panel);
 
     GridBagConstraints constraints = new GridBagConstraints();
@@ -44,52 +41,56 @@ public class NewGameDialog extends JDialog {
       constraints.gridx++;
     }
 
+    constraints.gridy++;
     constraints.gridx=0;
-    constraints.gridy=1;
-    for (JButton button : buttons()) {
-      panel.add(button, constraints);
+    for (String gameType : new String[] {"Beginner", "Intermediate", "Advanced"}) {
+      addRow(gameType, constraints, false);
       constraints.gridy++;
     }
-    constraints.gridy--;
-
-    constraints.gridx++;
-    panel.add(width, constraints);
-
-    constraints.gridx++;
-    panel.add(height, constraints);
-
-    constraints.gridx++;
-    constraints.fill = GridBagConstraints.NONE;
-    panel.add(numColors, constraints);
+    addRow("Custom", constraints, true);
 
     this.setSize(this.getPreferredSize());
     this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
     this.setVisible(true);
   }
 
-  // unused
-  private JPanel labeledTextFieldPanel(String label, JTextField textField) {
-    JPanel labeledTextField = new JPanel(new GridBagLayout());
-    GridBagConstraints constraints = new GridBagConstraints();
-    constraints.fill = GridBagConstraints.HORIZONTAL;
-    constraints.weightx = 1;
+  /**
+   * Warning: This method will change the gridx attribute of the GridBigConstraints object
+   * that is passed in.
+   *
+   * @param gameTypeName The type of game. Should be in GameSettings.gameTypes.keySet()
+   * @param constraints The constraints that will be used to add the row (with the exception
+   * of .gridx which obviously will vary
+   */
+  private void addRow(String gameTypeName, GridBagConstraints constraints, boolean enable) {
+    final GameSettings settings = GameSettings.get(gameTypeName);
+
     constraints.gridx = 0;
-    labeledTextField.add(new JLabel(label), constraints);
+    JButton button = new JButton(gameTypeName);
+    button.addActionListener(new ActionListener() {
+      @Override public void actionPerformed(ActionEvent arg0) {
+        ((Floodit) getOwner()).newGame(settings);
+        ((Floodit) getOwner()).update();
+        NewGameDialog.this.dispose();
+      }
+    });
+    panel.add(button, constraints);
 
-    constraints.weightx = 200;
     constraints.gridx++;
-    labeledTextField.add(textField, constraints);
-    return labeledTextField;
-  }
+    JTextField widthField = new JTextField(Integer.toString(settings.width));
+    widthField.setEnabled(enable);
+    panel.add(widthField, constraints);
 
-  private List<JButton> buttons() {
-    List<JButton> buttons = Arrays.asList(
-        new JButton("Beginner"),
-        new JButton("Intermediate"),
-        new JButton("Advanced"),
-        new JButton("Custom")
-    );
-    return buttons;
+    constraints.gridx++;
+    JTextField heightField = new JTextField(Integer.toString(settings.height));
+    heightField.setEnabled(enable);
+    panel.add(heightField, constraints);
+
+    constraints.gridx++;
+    JSpinner numColors = new JSpinner(
+        new SpinnerNumberModel(settings.numColors, 2, Square.colors().size(), 1));
+    numColors.setEnabled(enable);
+    panel.add(numColors, constraints);
   }
 
   private List<JLabel> headers() {
@@ -105,11 +106,4 @@ public class NewGameDialog extends JDialog {
     return headers;
   }
 
-  /**
-   * For testing only
-   */
-  public static void main(String[] args) throws Exception {
-    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-    new NewGameDialog(null);
-  }
 }
