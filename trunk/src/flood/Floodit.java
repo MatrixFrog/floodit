@@ -28,10 +28,10 @@ import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 
 /**
- * An attempt to clone the iPhone game Floodit
+ * An attempt to clone the iPhone game Floodit. See http://code.google.com/p/floodit/
  */
 public class Floodit extends JFrame {
-  static final boolean DEBUG = true;
+  static final boolean DEBUG = false;
 
   private Grid grid;
   private int numMoves = 0;
@@ -54,7 +54,7 @@ public class Floodit extends JFrame {
 
   public Floodit() {
     super("FloodIt");
-    newGame(GameSettings.get("Novice"));
+    newGame(GameSettings.get("Beginner"));
 
     addNumMovesLabel();
     addCanvas();

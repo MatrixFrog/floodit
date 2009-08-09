@@ -17,7 +17,7 @@ class GameSettings {
   }
 
   static Map<String, GameSettings> gameTypes = new HashMap<String, GameSettings>() {{
-    put("Novice", new GameSettings(3, 3, 2));
+    put("Novice", new GameSettings(3, 3, 2)); // Mostly just used for testing
     put("Beginner", new GameSettings(15, 15, 6));
     put("Intermediate", new GameSettings(30, 30, 6));
     put("Advanced", new GameSettings(40, 40, 6));
