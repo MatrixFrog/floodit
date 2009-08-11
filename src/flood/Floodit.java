@@ -91,6 +91,7 @@ public class Floodit extends JFrame {
     constraints.gridx = 1;
     constraints.gridy = 0;
     constraints.weightx = 5;
+    constraints.fill = GridBagConstraints.BOTH;
     panel.add(canvas, constraints);
   }
 

@@ -12,10 +12,6 @@ import org.apache.commons.io.IOUtils;
 
 class HelpWindow extends JDialog {
 
-  public static void main(String[] args) {
-    new HelpWindow(null, "help.htm");
-  }
-
   JLabel label;
 
   HelpWindow(JFrame owner, String helpFilename) {
@@ -36,7 +32,8 @@ class HelpWindow extends JDialog {
       helpText = IOUtils.toString(helpStream);
 
     } catch (IOException e) {
-      helpText = e.toString();
+      JOptionPane.showMessageDialog(owner, "ERROR: " + e.toString());
+      return;
     }
     label.setText(helpText);
 

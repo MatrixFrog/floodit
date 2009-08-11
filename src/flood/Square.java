@@ -27,6 +27,11 @@ class Square {
     }
   };
 
+  @Override
+  public Square clone() {
+    return new Square(this.color);
+  }
+
   public static List<Color> colors() {
     List<Color> colorList = new ArrayList<Color>();
     for (Color color : colorsAndNames.keySet()) {
