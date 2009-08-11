@@ -17,19 +17,14 @@ import common.swingutils.Points;
 public class Grid {
 
   private Square[][] data;
-  private Collection<Square> upperLeftGroup = new HashSet<Square>();
+  Collection<Square> upperLeftGroup = new HashSet<Square>();
   private List<Color> colors = new ArrayList<Color>();
 
   public Grid(int width, int height, int numColors) {
     initColors(numColors);
     data = new Square[width][height];
-    for (int i = 0; i < width; i++) {
-      for (int j = 0; j < height; j++) {
-        data[i][j] = new Square(RandomUtils.choice(colors));
-      }
-    }
-    upperLeftGroup.add(get(0, 0));
-    update();
+    initSquares();
+    initUpperLeftGroup();
   }
 
   public Grid(Dimension gridSize, int numColors) {
@@ -40,13 +35,47 @@ public class Grid {
     this(settings.width, settings.height, settings.numColors);
   }
 
+  /**
+   * Used only in {@link #clone()}
+   */
+  private Grid(int width, int height) {
+    data = new Square[width][height];
+  }
+
+  private void initSquares() {
+    for (int x = 0; x < getWidth(); x++) {
+      for (int y = 0; y < getHeight(); y++) {
+        data[x][y] = new Square(RandomUtils.choice(colors));
+      }
+    }
+  }
+
+  private void initUpperLeftGroup() {
+    upperLeftGroup.clear();
+    upperLeftGroup.add(get(0, 0));
+    update();
+  }
+
+  @Override
+  protected Grid clone() {
+    Grid clone = new Grid(this.getWidth(), this.getHeight());
+    clone.colors = this.colors;
+    for (int x=0; x<getWidth(); x++) {
+      for (int y=0; y<getHeight(); y++) {
+        clone.data[x][y] = this.data[x][y].clone();
+      }
+    }
+    clone.initUpperLeftGroup();
+    return clone;
+  }
+
   private void initColors(int numColors) {
     List<Color> allColors = Square.colors();
 
     if (numColors > allColors.size()) {
       throw new IllegalArgumentException(
           String.format("Flood It only knows of %d colors, so you cannot " +
-          		"have more than that in your grid.", allColors.size()));
+              "have more than that in your grid.", allColors.size()));
     }
     Collections.shuffle(allColors);
 
@@ -57,6 +86,10 @@ public class Grid {
 
   public Color getUpperLeftColor() {
     return get(0, 0).getColor();
+  }
+
+  public int getNumInUpperLeftGroup() {
+    return upperLeftGroup.size();
   }
 
   public void changeUpperLeftGroupToColor(Color color) {
@@ -88,11 +121,11 @@ public class Grid {
   }
 
   /**
-   * @return All the squares orthogonally adjacent to the square at (i, j).
+   * @return All the squares orthogonally adjacent to the square at (x, y).
    */
-  List<Square> getNeighbors(int i, int j) {
+  List<Square> getNeighbors(int x, int y) {
     List<Square> neighbors = new ArrayList<Square>();
-    for (Point p : Points.getOrthoNeighbors(new Point(i, j))) {
+    for (Point p : Points.getOrthoNeighbors(new Point(x, y))) {
       if (this.contains(p)) {
         neighbors.add(this.get(p));
       }
@@ -120,13 +153,7 @@ public class Grid {
   }
 
   public boolean isAllSameColor() {
-    Square upperLeft = get(0, 0);
-    for (Square square : allSquares()) {
-      if (!upperLeft.sameColor(square)) {
-        return false;
-      }
-    }
-    return true;
+    return getNumInUpperLeftGroup() == getWidth()*getHeight();
   }
 
   public Iterable<Square> allSquares() {
@@ -171,9 +198,9 @@ public class Grid {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < getWidth(); i++) {
-      for (int j = 0; j < getHeight(); j++) {
-        Square square = get(i, j);
+    for (int y = 0; y < getHeight(); y++) {
+      for (int x = 0; x < getWidth(); x++) {
+        Square square = get(x, y);
         String str = square.toString();
         if (upperLeftGroup.contains(square)) {
           str = str.toUpperCase();
@@ -189,8 +216,8 @@ public class Grid {
     return get(p.x, p.y);
   }
 
-  public Square get(int i, int j) {
-    return data[i][j];
+  public Square get(int x, int y) {
+    return data[x][y];
   }
 
   public List<Color> getColors() {
