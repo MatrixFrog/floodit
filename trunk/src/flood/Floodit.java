@@ -227,13 +227,23 @@ public class Floodit extends JFrame {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+      floodit.grid.changeUpperLeftGroupToColor(color);
+      floodit.numMoves++;
+      floodit.update();
       for (SelectColorAction action : floodit.allSelectColorActions) {
         action.setEnabled(true);
       }
       this.setEnabled(false);
-      floodit.grid.changeUpperLeftGroupToColor(color);
-      floodit.numMoves++;
-      floodit.update();
+    }
+
+    @Override
+    public void setEnabled(boolean enable) {
+      if (enable && floodit.grid.containsColor(color)) {
+        super.setEnabled(true);
+      }
+      else {
+        super.setEnabled(false);
+      }
     }
   }
 
