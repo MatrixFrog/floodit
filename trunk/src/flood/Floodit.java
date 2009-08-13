@@ -27,6 +27,8 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 
+import flood.undo.UndoStack;
+
 /**
  * An attempt to clone the iPhone game Floodit. See http://code.google.com/p/floodit/
  */
@@ -40,6 +42,10 @@ public class Floodit extends JFrame {
   private JPanel buttonPanel = new JPanel(new GridBagLayout());;
   private JLabel numMovesLabel = new JLabel("0", JLabel.LEFT);
   private Canvas canvas;
+
+  private UndoStack<Grid> undoStack;
+  private UndoAction undoAction = new UndoAction(this);
+  private RedoAction redoAction = new RedoAction(this);
 
   private List<SelectColorAction> allSelectColorActions = new ArrayList<SelectColorAction>();
 
@@ -74,13 +80,13 @@ public class Floodit extends JFrame {
   }
 
   public void undo() {
-    // TODO
+    grid = undoStack.undo();
     numMoves--;
     update();
   }
 
   public void redo() {
-    // TODO
+    grid = undoStack.redo();
     numMoves++;
     update();
   }
@@ -124,8 +130,8 @@ public class Floodit extends JFrame {
     JMenuBar menuBar = new JMenuBar();
     JMenu gameMenu = new JMenu("Game");
     gameMenu.add(new JMenuItem(new NewGameAction(this)));
-    gameMenu.add(new JMenuItem(new UndoAction(this)));
-    gameMenu.add(new JMenuItem(new RedoAction(this)));
+    gameMenu.add(new JMenuItem(undoAction));
+    gameMenu.add(new JMenuItem(redoAction));
     gameMenu.add("High scores");
 
     JMenu helpMenu = new JMenu("Help");
@@ -182,6 +188,8 @@ public class Floodit extends JFrame {
 
   public void newGame(Dimension gridSize, int numColors) {
     grid = new Grid(gridSize, numColors);
+    undoStack = new UndoStack<Grid>();
+    undoStack.push(grid.clone());
     numMoves = 0;
     allSelectColorActions.clear();
     updateButtons();
@@ -194,10 +202,13 @@ public class Floodit extends JFrame {
     if (grid.isAllSameColor()) {
       displayWinMessage();
     }
+    undoAction.setEnabled(undoStack.canUndo());
+    redoAction.setEnabled(undoStack.canRedo());
     updateSelectColorActionsEnabled();
     if (DEBUG) {
       System.out.println("===== Start debug info =====");
       System.out.println("current grid: \n" + grid);
+      System.out.println("undoStack: " + undoStack);
       System.out.println("===== End debug info =====");
     }
   }
@@ -216,11 +227,6 @@ public class Floodit extends JFrame {
     int option = JOptionPane.showOptionDialog(this, "You win with " + numMoves
         + " moves!", "Congratulations", JOptionPane.YES_NO_OPTION,
         JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
-    if (DEBUG) {
-      System.out.println("option=" + option);
-      System.out.println("yes=" + JOptionPane.YES_OPTION);
-      System.out.println("no=" + JOptionPane.NO_OPTION);
-    }
     switch (option) {
     case JOptionPane.YES_OPTION:
       new NewGameDialog(this);
@@ -293,22 +299,11 @@ public class Floodit extends JFrame {
     public void actionPerformed(ActionEvent e) {
       floodit.grid.changeUpperLeftGroupToColor(color);
       floodit.numMoves++;
+
+      floodit.undoStack.push(floodit.grid.clone());
       floodit.update();
-      for (SelectColorAction action : floodit.allSelectColorActions) {
-        action.setEnabled(true);
-      }
-      this.setEnabled(false);
     }
 
-    @Override
-    public void setEnabled(boolean enable) {
-      if (enable && floodit.grid.containsColor(color)) {
-        super.setEnabled(true);
-      }
-      else {
-        super.setEnabled(false);
-      }
-    }
   }
 
 }
