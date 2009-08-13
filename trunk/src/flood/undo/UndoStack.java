@@ -3,6 +3,8 @@ package flood.undo;
 import java.util.LinkedList;
 import java.util.List;
 
+import common.CollectionUtils;
+
 public class UndoStack<T> {
 
   private List<T> data = new LinkedList<T>();
@@ -13,10 +15,8 @@ public class UndoStack<T> {
     return data.size();
   }
 
-  public void push(T e) {
-    while (data.size() > currentIndex+1) {
-      data.remove(currentIndex+1);
-    }
+  public void add(T e) {
+    CollectionUtils.truncate(data, currentIndex + 1);
     data.add(e);
     currentIndex++;
   }
@@ -24,8 +24,8 @@ public class UndoStack<T> {
   public T undo() throws CannotUndoException {
     if (canUndo()) {
       currentIndex--;
-    return current();
-  }
+      return current();
+    }
     else {
       throw new CannotUndoException();
     }
@@ -46,7 +46,7 @@ public class UndoStack<T> {
   }
 
   public boolean canRedo() {
-    return currentIndex < data.size()-1;
+    return currentIndex < data.size() - 1;
   }
 
   public T current() {
@@ -60,6 +60,6 @@ public class UndoStack<T> {
 
   @Override
   public String toString() {
-    return "UndoStack" + data;
+    return String.format("UndoStack <%d> %n%s", currentIndex, data);
   }
 }

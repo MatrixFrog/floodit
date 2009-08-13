@@ -25,15 +25,15 @@ public class UndoStackTest {
     assertEquals(0, stack.size());
     assertNull(stack.current());
 
-    stack.push("one");
+    stack.add("one");
     assertEquals(1, stack.size());
     assertEquals("one",stack.current());
 
-    stack.push("two");
+    stack.add("two");
     assertEquals(2, stack.size());
     assertEquals("two",stack.current());
 
-    stack.push("three");
+    stack.add("three");
     assertEquals(3, stack.size());
     assertEquals("three",stack.current());
 

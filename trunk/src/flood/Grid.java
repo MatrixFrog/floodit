@@ -197,7 +197,7 @@ public class Grid {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
+    StringBuilder sb = new StringBuilder("\n");
     for (int y = 0; y < getHeight(); y++) {
       for (int x = 0; x < getWidth(); x++) {
         Square square = get(x, y);
