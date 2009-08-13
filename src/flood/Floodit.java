@@ -80,13 +80,13 @@ public class Floodit extends JFrame {
   }
 
   public void undo() {
-    grid = undoStack.undo();
+    grid = undoStack.undo().clone();
     numMoves--;
     update();
   }
 
   public void redo() {
-    grid = undoStack.redo();
+    grid = undoStack.redo().clone();
     numMoves++;
     update();
   }
@@ -189,7 +189,7 @@ public class Floodit extends JFrame {
   public void newGame(Dimension gridSize, int numColors) {
     grid = new Grid(gridSize, numColors);
     undoStack = new UndoStack<Grid>();
-    undoStack.push(grid.clone());
+    undoStack.add(grid.clone());
     numMoves = 0;
     allSelectColorActions.clear();
     updateButtons();
@@ -300,7 +300,7 @@ public class Floodit extends JFrame {
       floodit.grid.changeUpperLeftGroupToColor(color);
       floodit.numMoves++;
 
-      floodit.undoStack.push(floodit.grid.clone());
+      floodit.undoStack.add(floodit.grid.clone());
       floodit.update();
     }
 
