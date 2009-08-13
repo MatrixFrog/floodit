@@ -33,7 +33,7 @@ import flood.undo.UndoStack;
  * An attempt to clone the iPhone game Floodit. See http://code.google.com/p/floodit/
  */
 public class Floodit extends JFrame {
-  static final boolean DEBUG = true;
+  static final boolean DEBUG = false;
 
   private Grid grid;
   private int numMoves = 0;
