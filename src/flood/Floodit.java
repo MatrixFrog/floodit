@@ -26,12 +26,14 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
+import javax.swing.undo.AbstractUndoableEdit;
+import javax.swing.undo.UndoManager;
 
 /**
  * An attempt to clone the iPhone game Floodit. See http://code.google.com/p/floodit/
  */
 public class Floodit extends JFrame {
-  static final boolean DEBUG = false;
+  static final boolean DEBUG = true;
 
   private Grid grid;
   private int numMoves = 0;
@@ -40,6 +42,10 @@ public class Floodit extends JFrame {
   private JPanel buttonPanel = new JPanel(new GridBagLayout());;
   private JLabel numMovesLabel = new JLabel("0", JLabel.LEFT);
   private Canvas canvas;
+
+  private UndoManager undoManager = new UndoManager();
+  private UndoAction undoAction = new UndoAction(this);
+  private RedoAction redoAction = new RedoAction(this);
 
   private List<SelectColorAction> allSelectColorActions = new ArrayList<SelectColorAction>();
 
@@ -54,8 +60,12 @@ public class Floodit extends JFrame {
 
   public Floodit() {
     super("FloodIt");
-    newGame(GameSettings.get("Beginner"));
-
+    if (DEBUG) {
+      newGame(GameSettings.get("Novice"));
+    }
+    else {
+      newGame(GameSettings.get("Beginner"));
+    }
     addNumMovesLabel();
     addCanvas();
     addButtonPanel();
@@ -66,6 +76,22 @@ public class Floodit extends JFrame {
     this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     this.setVisible(true);
 
+    update();
+  }
+
+  public void undo() {
+    if (!undoManager.canRedo()) {
+      undoManager.addEdit(new GridUndoableEdit(this, grid.clone()));
+    }
+    undoManager.undo(); // the edit that was just added
+    undoManager.undo(); // the previous edit
+    numMoves--;
+    update();
+  }
+
+  public void redo() {
+    undoManager.redo();
+    numMoves++;
     update();
   }
 
@@ -91,7 +117,7 @@ public class Floodit extends JFrame {
     constraints.gridx = 1;
     constraints.gridy = 0;
     constraints.weightx = 5;
-    constraints.fill = GridBagConstraints.BOTH;
+    constraints.fill = GridBagConstraints.CENTER;
     panel.add(canvas, constraints);
   }
 
@@ -108,8 +134,8 @@ public class Floodit extends JFrame {
     JMenuBar menuBar = new JMenuBar();
     JMenu gameMenu = new JMenu("Game");
     gameMenu.add(new JMenuItem(new NewGameAction(this)));
-    gameMenu.add("Undo");
-    gameMenu.add("Redo");
+    gameMenu.add(new JMenuItem(new UndoAction(this)));
+    gameMenu.add(new JMenuItem(new RedoAction(this)));
     gameMenu.add("High scores");
 
     JMenu helpMenu = new JMenu("Help");
@@ -167,6 +193,7 @@ public class Floodit extends JFrame {
   public void newGame(Dimension gridSize, int numColors) {
     grid = new Grid(gridSize, numColors);
     numMoves = 0;
+    undoManager.discardAllEdits();
     allSelectColorActions.clear();
     updateButtons();
   }
@@ -177,6 +204,24 @@ public class Floodit extends JFrame {
     panel.validate();
     if (grid.isAllSameColor()) {
       displayWinMessage();
+    }
+    updateSelectColorActionsEnabled();
+    undoAction.setEnabled(undoManager.canUndo());
+    redoAction.setEnabled(undoManager.canRedo());
+    if (DEBUG) {
+      System.out.println("===== Start debug info =====");
+      System.out.println("undoManager: " + undoManager);
+      System.out.println("undoAction enabled: " + undoAction.isEnabled());
+      System.out.println("redoAction enabled: " + redoAction.isEnabled());
+      System.out.println("current grid: \n" + grid);
+      System.out.println("===== End debug info =====");
+    }
+  }
+
+  private void updateSelectColorActionsEnabled() {
+    for (SelectColorAction sca : allSelectColorActions) {
+      Color color = sca.color;
+        sca.setEnabled(grid.containsColor(color) && !grid.getUpperLeftColor().equals(color));
     }
   }
 
@@ -209,6 +254,41 @@ public class Floodit extends JFrame {
     System.exit(0);
   }
 
+  static class UndoAction extends AbstractAction {
+
+    private Floodit floodit;
+
+    public UndoAction(Floodit floodit) {
+      super("Undo");
+      this.floodit = floodit;
+      putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_Z,
+          ActionEvent.CTRL_MASK));
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent arg0) {
+      floodit.undo();
+    }
+  }
+
+  static class RedoAction extends AbstractAction {
+
+    private Floodit floodit;
+
+    public RedoAction(Floodit floodit) {
+      super("Redo");
+      this.floodit = floodit;
+      putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_Y,
+          ActionEvent.CTRL_MASK));
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent arg0) {
+      floodit.redo();
+    }
+  }
+
+  // TODO separate out the enabling/disabling functionality for better integration with undo/redo
   static class SelectColorAction extends AbstractAction {
     private Color color;
     private Floodit floodit;
@@ -227,23 +307,54 @@ public class Floodit extends JFrame {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+      floodit.undoManager.addEdit(
+          new GridUndoableEdit(floodit, floodit.grid.clone()));
+
       floodit.grid.changeUpperLeftGroupToColor(color);
       floodit.numMoves++;
       floodit.update();
-      for (SelectColorAction action : floodit.allSelectColorActions) {
-        action.setEnabled(true);
-      }
-      this.setEnabled(false);
+//      for (SelectColorAction action : floodit.allSelectColorActions) {
+//        action.setEnabled(true);
+//      }
+//      this.setEnabled(false);
     }
 
-    @Override
-    public void setEnabled(boolean enable) {
-      if (enable && floodit.grid.containsColor(color)) {
-        super.setEnabled(true);
+//    @Override
+//    public void setEnabled(boolean enable) {
+//      if (enable && floodit.grid.containsColor(color)) {
+//        super.setEnabled(true);
+//      }
+//      else {
+//        super.setEnabled(false);
+//      }
+//    }
+  }
+
+  static class GridUndoableEdit extends AbstractUndoableEdit {
+    private Grid grid;
+    private Floodit floodit;
+
+    public GridUndoableEdit(Floodit floodit, Grid grid) {
+      this.floodit = floodit;
+      this.grid = grid;
+    }
+
+    @Override public void undo() {
+      this.floodit.grid = this.grid;
+      if (DEBUG) {
+        System.out.println(this + ".undo() called");
       }
-      else {
-        super.setEnabled(false);
+    }
+
+    @Override public void redo() {
+      this.floodit.grid = this.grid;
+      if (DEBUG) {
+        System.out.println(this + ".redo() called");
       }
+    }
+
+    @Override public String toString() {
+      return "GridUndoableEdit[\n"+grid.toString()+"\n]";
     }
   }
 
