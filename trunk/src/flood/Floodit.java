@@ -31,7 +31,7 @@ import javax.swing.UIManager;
  * An attempt to clone the iPhone game Floodit. See http://code.google.com/p/floodit/
  */
 public class Floodit extends JFrame {
-  static final boolean DEBUG = false;
+  static final boolean DEBUG = true;
 
   private Grid grid;
   private int numMoves = 0;
@@ -54,8 +54,12 @@ public class Floodit extends JFrame {
 
   public Floodit() {
     super("FloodIt");
-    newGame(GameSettings.get("Beginner"));
-
+    if (DEBUG) {
+      newGame(GameSettings.get("Novice"));
+    }
+    else {
+      newGame(GameSettings.get("Beginner"));
+    }
     addNumMovesLabel();
     addCanvas();
     addButtonPanel();
@@ -66,6 +70,18 @@ public class Floodit extends JFrame {
     this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     this.setVisible(true);
 
+    update();
+  }
+
+  public void undo() {
+    // TODO
+    numMoves--;
+    update();
+  }
+
+  public void redo() {
+    // TODO
+    numMoves++;
     update();
   }
 
@@ -91,7 +107,7 @@ public class Floodit extends JFrame {
     constraints.gridx = 1;
     constraints.gridy = 0;
     constraints.weightx = 5;
-    constraints.fill = GridBagConstraints.BOTH;
+    constraints.fill = GridBagConstraints.CENTER;
     panel.add(canvas, constraints);
   }
 
@@ -108,8 +124,8 @@ public class Floodit extends JFrame {
     JMenuBar menuBar = new JMenuBar();
     JMenu gameMenu = new JMenu("Game");
     gameMenu.add(new JMenuItem(new NewGameAction(this)));
-    gameMenu.add("Undo");
-    gameMenu.add("Redo");
+    gameMenu.add(new JMenuItem(new UndoAction(this)));
+    gameMenu.add(new JMenuItem(new RedoAction(this)));
     gameMenu.add("High scores");
 
     JMenu helpMenu = new JMenu("Help");
@@ -178,6 +194,19 @@ public class Floodit extends JFrame {
     if (grid.isAllSameColor()) {
       displayWinMessage();
     }
+    updateSelectColorActionsEnabled();
+    if (DEBUG) {
+      System.out.println("===== Start debug info =====");
+      System.out.println("current grid: \n" + grid);
+      System.out.println("===== End debug info =====");
+    }
+  }
+
+  private void updateSelectColorActionsEnabled() {
+    for (SelectColorAction sca : allSelectColorActions) {
+      Color color = sca.color;
+        sca.setEnabled(grid.containsColor(color) && !grid.getUpperLeftColor().equals(color));
+    }
   }
 
   private void displayWinMessage() {
@@ -209,6 +238,41 @@ public class Floodit extends JFrame {
     System.exit(0);
   }
 
+  static class UndoAction extends AbstractAction {
+
+    private Floodit floodit;
+
+    public UndoAction(Floodit floodit) {
+      super("Undo");
+      this.floodit = floodit;
+      putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_Z,
+          ActionEvent.CTRL_MASK));
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent arg0) {
+      floodit.undo();
+    }
+  }
+
+  static class RedoAction extends AbstractAction {
+
+    private Floodit floodit;
+
+    public RedoAction(Floodit floodit) {
+      super("Redo");
+      this.floodit = floodit;
+      putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_Y,
+          ActionEvent.CTRL_MASK));
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent arg0) {
+      floodit.redo();
+    }
+  }
+
+  // TODO separate out the enabling/disabling functionality for better integration with undo/redo
   static class SelectColorAction extends AbstractAction {
     private Color color;
     private Floodit floodit;
