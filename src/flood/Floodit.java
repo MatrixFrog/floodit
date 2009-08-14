@@ -17,6 +17,7 @@ import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -24,6 +25,8 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 
@@ -33,7 +36,8 @@ import flood.undo.UndoStack;
  * An attempt to clone the iPhone game Floodit. See http://code.google.com/p/floodit/
  */
 public class Floodit extends JFrame {
-  static final boolean DEBUG = false;
+  static final boolean DEBUG = true;
+  static JTextArea changeLog; // only used for debugging
 
   private Grid grid;
   private int numMoves = 0;
@@ -60,6 +64,13 @@ public class Floodit extends JFrame {
 
   public Floodit() {
     super("FloodIt");
+    if (DEBUG) {
+        changeLog = new JTextArea(5, 30);
+        JDialog changeLogDialog = new JDialog(this);
+        changeLogDialog.add(new JScrollPane(changeLog));
+        changeLogDialog.setSize(300, 800);
+        changeLogDialog.setVisible(true);
+    }
     if (DEBUG) {
       newGame(GameSettings.get("Novice"));
     }
@@ -206,10 +217,10 @@ public class Floodit extends JFrame {
     redoAction.setEnabled(undoStack.canRedo());
     updateSelectColorActionsEnabled();
     if (DEBUG) {
-      System.out.println("===== Start debug info =====");
-      System.out.println("current grid: \n" + grid);
-      System.out.println("undoStack: " + undoStack);
-      System.out.println("===== End debug info =====");
+      changeLog.append("===== Start debug info =====\n");
+      changeLog.append("current grid: \n" + grid + "\n");
+      changeLog.append("undoStack: " + undoStack + "\n");
+      changeLog.append("===== End debug info =====\n");
     }
   }
 
