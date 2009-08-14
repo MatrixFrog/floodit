@@ -1,5 +1,8 @@
 package flood;
 
+import static flood.Floodit.DEBUG;
+import static flood.Floodit.changeLog;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -23,13 +26,20 @@ class HelpWindow extends JDialog {
 
     String helpText;
     try {
-      InputStream helpStream = getClass().getResourceAsStream(helpFilename);
+      InputStream helpStream = ClassLoader.getSystemResourceAsStream(
+          "flood/" + helpFilename);
+      if (DEBUG) {
+        changeLog.append("helpStream: " + helpStream + "\n");
+      }
       if (helpStream == null) {
         JOptionPane.showMessageDialog(owner, "ERROR: Could not load '"
-            + helpFilename + "'");
+            + helpFilename + "'", "Error", JOptionPane.ERROR_MESSAGE);
         return;
       }
       helpText = IOUtils.toString(helpStream);
+      if (DEBUG) {
+        changeLog.append("helpText: '" + helpText + "'\n");
+      }
 
     } catch (IOException e) {
       JOptionPane.showMessageDialog(owner, "ERROR: " + e.toString());
