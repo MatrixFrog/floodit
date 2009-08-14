@@ -24,6 +24,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 
+import common.swingutils.SwingUtils;
+
 public class NewGameDialog extends JDialog {
 
   private JPanel panel = new JPanel(new GridBagLayout());
@@ -64,8 +66,8 @@ public class NewGameDialog extends JDialog {
       }
     }), constraints);
 
-
     this.setSize(this.getPreferredSize());
+    SwingUtils.centerOnScreen(this);
     this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
     this.setVisible(true);
   }

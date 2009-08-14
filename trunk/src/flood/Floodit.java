@@ -30,13 +30,15 @@ import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 
+import common.swingutils.SwingUtils;
+
 import flood.undo.UndoStack;
 
 /**
  * An attempt to clone the iPhone game Floodit. See http://code.google.com/p/floodit/
  */
 public class Floodit extends JFrame {
-  static final boolean DEBUG = true;
+  static final boolean DEBUG = false;
   static JTextArea changeLog; // only used for debugging
 
   private Grid grid;
@@ -83,6 +85,7 @@ public class Floodit extends JFrame {
     addMenuBar();
 
     this.setSize(1100, 900);
+    SwingUtils.centerOnScreen(this);
     this.add(panel);
     this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     this.setVisible(true);
