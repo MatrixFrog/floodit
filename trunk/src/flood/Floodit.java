@@ -270,7 +270,8 @@ public class Floodit extends JFrame {
     }
 
     @Override
-    public void actionPerformed(ActionEvent arg0) {
+    @SuppressWarnings("unused")
+    public void actionPerformed(ActionEvent e) {
       floodit.undo();
     }
   }
@@ -287,7 +288,8 @@ public class Floodit extends JFrame {
     }
 
     @Override
-    public void actionPerformed(ActionEvent arg0) {
+    @SuppressWarnings("unused")
+    public void actionPerformed(ActionEvent e) {
       floodit.redo();
     }
   }
@@ -310,6 +312,7 @@ public class Floodit extends JFrame {
     }
 
     @Override
+    @SuppressWarnings("unused")
     public void actionPerformed(ActionEvent e) {
       floodit.grid.changeUpperLeftGroupToColor(color);
       floodit.numMoves++;

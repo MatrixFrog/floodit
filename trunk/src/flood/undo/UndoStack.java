@@ -58,6 +58,11 @@ public class UndoStack<T> {
     }
   }
 
+  // Just for testing, at least for right now.
+  boolean contains(T e) {
+    return data.contains(e);
+  }
+
   @Override
   public String toString() {
     return String.format("UndoStack <%d> %n%s", currentIndex, data);

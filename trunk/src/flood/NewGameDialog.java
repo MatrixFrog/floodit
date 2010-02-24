@@ -27,8 +27,10 @@ import javax.swing.text.BadLocationException;
 import common.swingutils.SwingUtils;
 
 public class NewGameDialog extends JDialog {
-
+  // TODO get rid of 'panel' and just use the dialog's content pane via getContentPane() (?)
   private JPanel panel = new JPanel(new GridBagLayout());
+  private JButton cancelButton;
+
   GridBagConstraints constraints = new GridBagConstraints();
 
   public NewGameDialog(Floodit owner) {
@@ -52,19 +54,25 @@ public class NewGameDialog extends JDialog {
     addRow("Custom", true);
     constraints.gridy++;
 
+    // create cancel button
+    cancelButton = new JButton(new AbstractAction() {
+      {
+        putValue(NAME, "Cancel");
+      }
+
+      @Override
+      @SuppressWarnings("unused")
+      public void actionPerformed(ActionEvent e) {
+        ((Floodit) NewGameDialog.this.getOwner()).close();
+      }
+    });
+
+    // add cancel button to GUI
     constraints.gridx = 0;
     constraints.gridwidth = GridBagConstraints.REMAINDER;
     constraints.anchor = GridBagConstraints.CENTER;
     constraints.fill = GridBagConstraints.NONE;
-    panel.add(new JButton(new AbstractAction() {
-      {
-        putValue(NAME, "Cancel");
-      }
-      @Override public void actionPerformed(ActionEvent arg0) {
-        // TODO (maybe) have this do something other than close the entire game
-        ((Floodit) NewGameDialog.this.getOwner()).close();
-      }
-    }), constraints);
+    panel.add(cancelButton, constraints);
 
     this.setSize(this.getPreferredSize());
     SwingUtils.centerOnScreen(this);
@@ -83,8 +91,6 @@ public class NewGameDialog extends JDialog {
 
   /**
    * @param gameTypeName The type of game. Should be in GameSettings.gameTypes.keySet()
-   * @param constraints The constraints that will be used to add the row (with the exception
-   * of .gridx which obviously will vary
    */
   private void addRow(String gameTypeName, boolean enable) {
     final GameSettings settings = GameSettings.get(gameTypeName);
@@ -92,7 +98,10 @@ public class NewGameDialog extends JDialog {
     constraints.gridx = 0;
     JButton button = new JButton(gameTypeName);
     button.addActionListener(new ActionListener() {
-      @Override public void actionPerformed(ActionEvent e) {
+
+      @Override
+      @SuppressWarnings("unused")
+      public void actionPerformed(ActionEvent e) {
         ((Floodit) getOwner()).newGame(settings);
         ((Floodit) getOwner()).update();
         NewGameDialog.this.dispose();
@@ -105,7 +114,10 @@ public class NewGameDialog extends JDialog {
       new JFormattedTextField(NumberFormat.getNumberInstance());
     widthField.setText(Integer.toString(settings.width));
     widthField.getDocument().addDocumentListener(new DocumentListener() {
-      @Override public void changedUpdate(DocumentEvent e) {
+
+      @Override
+      @SuppressWarnings("unused")
+      public void changedUpdate(DocumentEvent e) {
         throw new RuntimeException();
       }
       @Override public void insertUpdate(DocumentEvent e) {
@@ -132,7 +144,10 @@ public class NewGameDialog extends JDialog {
     JFormattedTextField heightField =
       new JFormattedTextField(Integer.toString(settings.height));
     heightField.getDocument().addDocumentListener(new DocumentListener() {
-      @Override public void changedUpdate(DocumentEvent e) {
+
+      @Override
+      @SuppressWarnings("unused")
+      public void changedUpdate(DocumentEvent e) {
         throw new RuntimeException();
       }
       @Override public void insertUpdate(DocumentEvent e) {
