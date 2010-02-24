@@ -1,6 +1,7 @@
 package flood.undo;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
@@ -16,7 +17,20 @@ public class UndoStackTest {
    * and "change history"
    */
   @Test public void eraseTest() {
-    // TODO
+    UndoStack<String> stack = new UndoStack<String>();
+    stack.add("one");
+    stack.add("two");
+    stack.add("three");
+
+    assertEquals(3, stack.size());
+    assertEquals("three", stack.current());
+    stack.undo();
+    assertEquals("two", stack.current());
+    stack.add("four");
+    assertEquals("four", stack.current());
+    assertEquals(3, stack.size());
+
+    assertFalse(stack.contains("three"));
   }
 
   @Test public void basicTest() throws CannotUndoException, CannotRedoException {
