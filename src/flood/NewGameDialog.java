@@ -24,7 +24,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 
-import common.swingutils.SwingUtils;
+import util.swingutils.SwingUtils;
+
 
 public class NewGameDialog extends JDialog {
   // TODO get rid of 'panel' and just use the dialog's content pane via getContentPane() (?)
