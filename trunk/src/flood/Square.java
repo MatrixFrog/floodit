@@ -9,8 +9,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import common.RandomUtils;
-import common.swingutils.Colors;
+import util.RandomUtils;
+import util.swingutils.Colors;
+
 
 class Square {
   private Color color;

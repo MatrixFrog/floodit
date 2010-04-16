@@ -3,7 +3,8 @@ package flood.undo;
 import java.util.LinkedList;
 import java.util.List;
 
-import common.CollectionUtils;
+import util.CollectionUtils;
+
 
 public class UndoStack<T> {
 

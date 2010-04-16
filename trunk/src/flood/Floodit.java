@@ -28,10 +28,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
-import javax.swing.UIManager;
 
-import common.swingutils.SwingUtils;
-
+import util.swingutils.SwingUtils;
 import flood.undo.UndoStack;
 
 /**
@@ -45,7 +43,7 @@ public class Floodit extends JFrame {
   private int numMoves = 0;
 
   private JPanel panel = new JPanel(new GridBagLayout());
-  private JPanel buttonPanel = new JPanel(new GridBagLayout());;
+  private JPanel buttonPanel = new JPanel(new GridBagLayout());
   private JLabel numMovesLabel = new JLabel("0", JLabel.LEFT);
   private Canvas canvas;
 
@@ -56,11 +54,8 @@ public class Floodit extends JFrame {
   private List<SelectColorAction> allSelectColorActions = new ArrayList<SelectColorAction>();
 
   public static void main(String[] args) {
-    try {
-      UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-    } catch (Exception e) {
-      /* Just use the ugly Swing look and feel =( */
-    }
+    SwingUtils.useDialogExceptionHandler();
+    SwingUtils.useDefaultLookAndFeel();
     new Floodit();
   }
 

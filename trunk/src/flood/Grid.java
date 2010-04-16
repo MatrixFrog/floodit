@@ -11,8 +11,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
-import common.RandomUtils;
-import common.swingutils.Points;
+import util.RandomUtils;
+import util.swingutils.Points;
+
 
 public class Grid {
 
