@@ -5,61 +5,38 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 
 import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.experimental.theories.DataPoints;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
+import org.junit.runner.RunWith;
 
-/**
- * Unit test for flood.Grid
- */
+@RunWith(Theories.class)
 public class GridTest {
-
   private static final boolean DEBUG = false;
 
-  /**
-   * An arbitrary collection of grid settings for testing
-   */
-  private static List<GameSettings> settingsList = Arrays.asList(
+  @DataPoints
+  public static final GameSettings[] settingsList = {
       new GameSettings(4, 4, 5),
       new GameSettings(10, 10, 3),
       new GameSettings(10, 20, 3),
       new GameSettings(5, 50, 6),
       new GameSettings(2, 2, 7),
       new GameSettings(6, 100, 4)
-  );
+  };
 
-  private List<Grid> testGrids;
-
-  @Before public void initTestGrids() {
-    testGrids = new ArrayList<Grid>();
-    for (GameSettings settings : settingsList) {
-      testGrids.add(new Grid(settings));
-    }
-  }
-
-  @Test public void sanityCheck() {
-    for (GameSettings settings : settingsList) {
-      sanityCheck(settings);
-    }
-  }
-
-  private void sanityCheck(GameSettings settings) {
+  @Theory
+  public void sanityCheck(GameSettings settings) {
     Grid grid = new Grid(settings);
     assertEquals(settings.width, grid.getWidth());
     assertEquals(settings.height, grid.getHeight());
     assertEquals(settings.numColors, grid.getColors().size());
   }
 
-  @Test public void testClone() {
-    for (Grid grid : testGrids) {
-      testClone(grid);
-    }
-  }
-
-  private void testClone(Grid orig) {
+  @Theory
+  public void testClone(GameSettings settings) {
+    Grid orig = new Grid(settings);
     Grid clone = orig.clone();
 
     if (DEBUG) {
@@ -87,13 +64,9 @@ public class GridTest {
     }
   }
 
-  @Test public void testGetNeighbors() {
-    for (Grid grid : testGrids) {
-      testGetNeighbors(grid);
-    }
-  }
-
-  private void testGetNeighbors(Grid grid) {
+  @Theory
+  public void testGetNeighbors(GameSettings settings) {
+    Grid grid = new Grid(settings);
     for (int x=0; x<grid.getWidth(); x++) {
       for (int y=0; y<grid.getHeight(); y++) {
         testGetNeighbors(grid, x, y);
@@ -113,21 +86,13 @@ public class GridTest {
     assertEquals(numNeighbors, neighbors.size());
   }
 
-  private void testIteration(Grid grid) {
+  @Theory
+  public void testIteration(GameSettings settings) {
+    Grid grid = new Grid(settings);
     int i=0;
-    for (@SuppressWarnings("unused")
-        Square square: grid.allSquares()) {
+    for (@SuppressWarnings("unused") Square square: grid.allSquares()) {
       i++;
     }
     assertEquals(grid.getWidth()*grid.getHeight(), i);
-  }
-
-  /**
-   * Test the allSquares() method which iterates over all the squares.
-   */
-  @Test public void testIteration() {
-    for (Grid grid : testGrids) {
-      testIteration(grid);
-    }
   }
 }
