@@ -299,7 +299,6 @@ public class Floodit extends JFrame {
     }
   }
 
-  // TODO separate out the enabling/disabling functionality for better integration with undo/redo
   static class SelectColorAction extends AbstractAction {
     private Color color;
     private Floodit floodit;

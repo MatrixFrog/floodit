@@ -22,7 +22,7 @@ public class SwingUtils {
   }
 
   public static void useDialogExceptionHandler() {
-    System.setProperty("sun.awt.exception.handler", "flood.common.swingutils.UncaughtExceptionHandler");
+    System.setProperty("sun.awt.exception.handler", UncaughtExceptionHandler.class.getCanonicalName());
   }
 
   /**
