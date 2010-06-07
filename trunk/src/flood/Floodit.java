@@ -12,8 +12,9 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
@@ -37,21 +38,23 @@ import flood.undo.UndoStack;
  */
 public class Floodit extends JFrame {
   static final boolean DEBUG = false;
-  static JTextArea changeLog; // only used for debugging
+  /** The size of the grid, in pixels */
+  final Dimension gridSize = new Dimension(750, 750);
+  JTextArea changeLog; // only used for debugging
 
-  private Grid grid;
+  Grid grid;
   private int numMoves = 0;
 
   private JPanel panel = new JPanel(new GridBagLayout());
   private JPanel buttonPanel = new JPanel(new GridBagLayout());
   private JLabel numMovesLabel = new JLabel("0", JLabel.LEFT);
-  private Canvas canvas;
+  private Canvas gridPanel; // TODO turn this into a JPanel so that it can be double-buffered (?)
 
   private UndoStack<Grid> undoStack;
   private UndoAction undoAction = new UndoAction(this);
   private RedoAction redoAction = new RedoAction(this);
 
-  private List<SelectColorAction> allSelectColorActions = new ArrayList<SelectColorAction>();
+  private Map<Color,SelectColorAction> selectColorActions = new HashMap<Color,SelectColorAction>();
 
   public static void main(String[] args) {
     SwingUtils.useDialogExceptionHandler();
@@ -75,7 +78,7 @@ public class Floodit extends JFrame {
       newGame(GameSettings.get("Beginner"));
     }
     addNumMovesLabel();
-    addCanvas();
+    addGridPanel();
     addButtonPanel();
     addMenuBar();
 
@@ -110,20 +113,21 @@ public class Floodit extends JFrame {
     panel.add(numMovesLabel, constraints);
   }
 
-  private void addCanvas() {
+  private void addGridPanel() {
     GridBagConstraints constraints = new GridBagConstraints();
-    canvas = new Canvas() {
+    gridPanel = new Canvas() {
       @Override
       public void paint(Graphics g) {
         grid.paint(g, getWidth(), getHeight());
       }
     };
-    canvas.setSize(750, 750);
+    gridPanel.addMouseListener(new FlooditMouseListener(this));
+    gridPanel.setSize(gridSize);
     constraints.gridx = 1;
     constraints.gridy = 0;
     constraints.weightx = 5;
     constraints.fill = GridBagConstraints.CENTER;
-    panel.add(canvas, constraints);
+    panel.add(gridPanel, constraints);
   }
 
   private void addButtonPanel() {
@@ -200,13 +204,13 @@ public class Floodit extends JFrame {
     undoStack = new UndoStack<Grid>();
     undoStack.add(grid.clone());
     numMoves = 0;
-    allSelectColorActions.clear();
+    selectColorActions.clear();
     updateButtons();
   }
 
   public void update() {
     numMovesLabel.setText(Integer.toString(numMoves));
-    canvas.repaint();
+    gridPanel.repaint();
     panel.validate();
     if (grid.isAllSameColor()) {
       displayWinMessage();
@@ -222,10 +226,18 @@ public class Floodit extends JFrame {
     }
   }
 
+  void selectColor(Color color) {
+    SelectColorAction sca = selectColorActions.get(color);
+    if (sca.isEnabled()) {
+      sca.actionPerformed(null); // TODO this is a very backward way of doing this
+    }
+  }
+
   private void updateSelectColorActionsEnabled() {
-    for (SelectColorAction sca : allSelectColorActions) {
-      Color color = sca.color;
-        sca.setEnabled(grid.containsColor(color) && !grid.getUpperLeftColor().equals(color));
+    for (Entry<Color, SelectColorAction> entry : selectColorActions.entrySet()) {
+      Color color = entry.getKey();
+      SelectColorAction sca = entry.getValue();
+      sca.setEnabled(grid.containsColor(color) && !grid.getUpperLeftColor().equals(color));
     }
   }
 
@@ -265,7 +277,6 @@ public class Floodit extends JFrame {
     }
 
     @Override
-    @SuppressWarnings("unused")
     public void actionPerformed(ActionEvent e) {
       floodit.undo();
     }
@@ -283,7 +294,6 @@ public class Floodit extends JFrame {
     }
 
     @Override
-    @SuppressWarnings("unused")
     public void actionPerformed(ActionEvent e) {
       floodit.redo();
     }
@@ -300,14 +310,13 @@ public class Floodit extends JFrame {
       this.color = color;
       putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(Square.colorsNames()
           .get(color), KeyEvent.CTRL_MASK));
-      floodit.allSelectColorActions.add(this);
+      floodit.selectColorActions.put(color, this);
       if (color.equals(floodit.grid.getUpperLeftColor())) {
         setEnabled(false);
       }
     }
 
     @Override
-    @SuppressWarnings("unused")
     public void actionPerformed(ActionEvent e) {
       floodit.grid.changeUpperLeftGroupToColor(color);
       floodit.numMoves++;
@@ -316,6 +325,12 @@ public class Floodit extends JFrame {
       floodit.update();
     }
 
+  }
+
+  void debug(Object o) {
+    if (DEBUG) {
+      changeLog.append(o + "\n");
+    }
   }
 
 }
