@@ -188,10 +188,18 @@ public class Grid {
     };
   }
 
+  /**
+   * @return The number of squares in a row of the grid. (This class is not responsible for
+   * UI considerations such as the grid's width in pixels.)
+   */
   public int getWidth() {
     return data.length;
   }
 
+  /**
+   * @return The number of squares in a column of the grid. (This class is not responsible for
+   * UI considerations such as the grid's height in pixels.)
+   */
   public int getHeight() {
     return data[0].length;
   }
